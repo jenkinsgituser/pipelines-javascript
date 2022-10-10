@@ -9,17 +9,30 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+variables:
+- group: pipeline-javascript
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      npm install
-      npm run build
-      npm test
-  displayName: 'npm install and build'
+steps:
+  - checkout: self
+    submodules: true
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'Install Node.js'
+
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        npm install
+        npm run build
+        npm test
+    displayName: 'npm install and build'
+
+  - task: AzureStaticWebApp@0
+    inputs:
+      app_location: '/' # App source code path relative to cwd
+      api_location: '' # Api source code path relative to cwd
+      output_location: '' # Built app content directory relative to app_location - optional
+      cwd: '$(System.DefaultWorkingDirectory)' # Working directory - optional
+      azure_static_web_apps_api_token: $(deployment_token)
